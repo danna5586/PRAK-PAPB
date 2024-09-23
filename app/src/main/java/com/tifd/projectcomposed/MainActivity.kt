@@ -1,8 +1,10 @@
 package com.tifd.projectcomposed
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +19,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -25,7 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -61,6 +65,11 @@ fun MyScreen() {
     var text by remember { mutableStateOf("") }
     var inputText by remember { mutableStateOf("") }
     var nimText by remember { mutableStateOf("") }
+    val isFormFilled = inputText.isNotBlank() && nimText.isNotBlank()
+    val buttonColor = if (isFormFilled) ButtonDefaults.buttonColors() else ButtonDefaults.buttonColors(
+        containerColor = Color.Gray
+    )
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -94,7 +103,7 @@ fun MyScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         InputForm(
-            icon = Icons.Filled.AccountBox,
+            icon = Icons.Filled.DateRange,
             label = "Masukkan NIM",
             value = nimText,
             onValueChange = { if (it.all { char -> char.isDigit() }) nimText = it },
@@ -104,8 +113,16 @@ fun MyScreen() {
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { text = "Nama: $inputText, NIM: $nimText" },
-            modifier = Modifier.fillMaxWidth(0.8f),
-            shape = RoundedCornerShape(8.dp)
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .clickable {
+                    Toast
+                        .makeText(context, "Nama: $inputText, NIM: $nimText", Toast.LENGTH_SHORT)
+                        .show()
+                },
+            shape = RoundedCornerShape(8.dp),
+            enabled = isFormFilled,
+            colors = buttonColor
         ) {
             Text("Submit", style = MaterialTheme.typography.bodyMedium)
         }
@@ -127,7 +144,7 @@ fun InputForm(
             .padding(8.dp)
     ) {
         Icon(
-            imageVector = icon,
+            imageVector= icon,
             contentDescription = "Icon",
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(32.dp)
