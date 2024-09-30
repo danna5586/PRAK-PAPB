@@ -1,5 +1,6 @@
 package com.tifd.projectcomposed
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -19,7 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -40,20 +41,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseAuth
 import com.tifd.projectcomposed.ui.theme.ProjectComposeDTheme
 
 class MainActivity : ComponentActivity() {
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        auth = FirebaseAuth.getInstance()
         setContent {
             ProjectComposeDTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MyScreen()
+                    MyScreen(auth)
                 }
             }
         }
@@ -61,11 +67,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MyScreen() {
-    var text by remember { mutableStateOf("") }
-    var inputText by remember { mutableStateOf("") }
-    var nimText by remember { mutableStateOf("") }
-    val isFormFilled = inputText.isNotBlank() && nimText.isNotBlank()
+fun MyScreen(auth: FirebaseAuth) {
+    var emailText by remember { mutableStateOf("") }
+    var passwordText by remember { mutableStateOf("") }
+    val isFormFilled = emailText.isNotBlank() && passwordText.isNotBlank()
     val buttonColor = if (isFormFilled) ButtonDefaults.buttonColors() else ButtonDefaults.buttonColors(
         containerColor = Color.Gray
     )
@@ -78,53 +83,72 @@ fun MyScreen() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Kartu dengan teks Login diposisikan di tengah
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Text(
-                text = text,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(16.dp)
+                text = "Login",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally) // Memposisikan teks di tengah
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
 
         InputForm(
             icon = Icons.Filled.AccountBox,
-            label = "Masukkan nama",
-            value = inputText,
-            onValueChange = { inputText = it }
+            label = "Masukkan Email",
+            value = emailText,
+            onValueChange = { emailText = it }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         InputForm(
-            icon = Icons.Filled.DateRange,
-            label = "Masukkan NIM",
-            value = nimText,
-            onValueChange = { if (it.all { char -> char.isDigit() }) nimText = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            icon = Icons.Filled.Lock,
+            label = "Masukkan Password",
+            value = passwordText,
+            onValueChange = { passwordText = it },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            visualTransformation = PasswordVisualTransformation()
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Tombol login dengan warna lebih menarik dan sudut membulat
         Button(
-            onClick = { text = "Nama: $inputText, NIM: $nimText" },
+            onClick = {
+                if (isFormFilled) {
+                    auth.signInWithEmailAndPassword(emailText, passwordText)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                // Login berhasil, pindah ke ListActivity
+                                val intent = Intent(context, ListActivity::class.java)
+                                context.startActivity(intent)
+                            } else {
+                                // Gagal login
+                                Toast.makeText(context, "Login gagal: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                } else {
+                    Toast.makeText(context, "Harap isi email dan password", Toast.LENGTH_SHORT).show()
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth(0.8f)
-                .clickable {
-                    Toast
-                        .makeText(context, "Nama: $inputText, NIM: $nimText", Toast.LENGTH_SHORT)
-                        .show()
-                },
-            shape = RoundedCornerShape(8.dp),
+                .padding(vertical = 8.dp),
+            shape = RoundedCornerShape(12.dp),
             enabled = isFormFilled,
             colors = buttonColor
         ) {
-            Text("Submit", style = MaterialTheme.typography.bodyMedium)
+            Text("Login", style = MaterialTheme.typography.bodyLarge, color = Color.White)
         }
     }
 }
@@ -135,7 +159,8 @@ fun InputForm(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -144,7 +169,7 @@ fun InputForm(
             .padding(8.dp)
     ) {
         Icon(
-            imageVector= icon,
+            imageVector = icon,
             contentDescription = "Icon",
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(32.dp)
@@ -156,15 +181,8 @@ fun InputForm(
             label = { Text(label) },
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(8.dp),
-            keyboardOptions = keyboardOptions
+            keyboardOptions = keyboardOptions,
+            visualTransformation = visualTransformation
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    ProjectComposeDTheme {
-        MyScreen()
     }
 }
