@@ -26,9 +26,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ListActivity"/>
-        <activity
-            android:name=".GithubProfileActivity"/>
+            android:name=".MainScreenActivity"/>
 
     </application>
 
