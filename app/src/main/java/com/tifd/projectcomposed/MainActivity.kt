@@ -146,6 +146,25 @@ fun MyScreen(auth: FirebaseAuth) {
 }
 
 @Composable
+fun MainScreen() {
+    val navController = rememberNavController()
+
+    Scaffold(
+        bottomBar = { BottomBar(navController) }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Matkul.route,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(Screen.Matkul.route) { MatkulScreen() }
+            composable(Screen.Tugas.route) { TugasScreen() }
+            composable(Screen.Profil.route) { ProfileScreen(username = "danna5586") }
+        }
+    }
+}
+
+@Composable
 fun InputForm(
     icon: ImageVector,
     label: String,
@@ -179,24 +198,6 @@ fun InputForm(
     }
 }
 
-@Composable
-fun MainScreen() {
-    val navController = rememberNavController()
-
-    Scaffold(
-        bottomBar = { BottomBar(navController) }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Matkul.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Screen.Matkul.route) { MatkulScreen() }
-            composable(Screen.Tugas.route) { TugasScreen() }
-            composable(Screen.Profil.route) { ProfileScreen(username = "danna5586") }
-        }
-    }
-}
 
 @Composable
 fun BottomBar(navController: NavController) {
