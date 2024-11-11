@@ -224,12 +224,21 @@ fun BottomBar(navController: NavController) {
                 },
                 modifier = Modifier.weight(1f)
             ) {
-                Icon(
-                    imageVector = item.icon,
-                    contentDescription = item.tittle,
-                    tint = if (currentRoute == item.screen.route) Color.Yellow else Color.White
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.tittle,
+                        tint = if (currentRoute == item.screen.route) Color.Yellow else Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Text(
+                        text = item.tittle,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (currentRoute == item.screen.route) Color.Yellow else Color.White
+                    )
+                }
             }
         }
     }
 }
+

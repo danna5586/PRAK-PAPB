@@ -86,9 +86,9 @@ dependencies {
     implementation ("io.coil-kt:coil-compose:2.3.0")
     implementation ("androidx.navigation:navigation-compose:2.7.3")
     implementation("androidx.compose.material:material-icons-extended:1.4.3")
-    implementation(libs.camerax.core)
-    implementation(libs.camerax.camera2)
-    implementation(libs.camerax.lifecycle)
-    implementation(libs.camerax.view)
-    implementation(libs.camerax.video)
+    implementation ("androidx.camera:camera-camera2:1.1.0")
+    implementation ("androidx.camera:camera-lifecycle:1.1.0")
+    implementation ("androidx.camera:camera-view:1.0.0-alpha31")
+    implementation ("androidx.camera:camera-extensions:1.0.0-alpha31")
+
 }
